@@ -73,3 +73,27 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 	task.ID = id
 	return c.JSON(http.StatusOK, map[string]models.Task{"updated task": *task})
 }
+
+// complete a task
+func (h *TaskHandler) CompleteTask(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	query := `UPDATE tasks SET completed = true WHERE id = $1`
+	_, err := h.DB.Exec(query, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Task completed"})
+}
+
+// delete a task
+func (h *TaskHandler) DeleteTask(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	query := `DELETE FROM tasks WHERE ID = $1`
+	_, err := h.DB.Exec(query, id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "task deleted"})
+}

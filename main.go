@@ -21,6 +21,8 @@ func main() {
 	e.GET("/tasks", taskHandler.GetTasks)
 	e.POST("/tasks", taskHandler.CreateTask)
 	e.PUT("/tasks/:id", taskHandler.UpdataTask)
+	e.PATCH("/tasks/:id/complete", taskHandler.CompleteTask)
+	e.DELETE("/tasks/:id", taskHandler.DeleteTask)
 
 	e.Logger.Fatal(e.Start(":4545"))
 }
