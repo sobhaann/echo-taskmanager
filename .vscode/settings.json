@@ -1,0 +1,28 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "test",
+            "database": "airbnb",
+            "username": "root",
+            "askForPassword": true
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "database": "taskmanager",
+            "username": "taskmanager_user",
+            "password": "1qaz2wsx",
+            "name": "taskmanager"
+        }
+    ]
+}

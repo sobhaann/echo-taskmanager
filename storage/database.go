@@ -39,7 +39,9 @@ func ConnectDB() *sql.DB {
 		CREATE TABLE IF NOT EXISTS tasks (
 			id SERIAL PRIMARY KEY,
 			title TEXT NOT NULL,
-			completed BOOLEAN DEFAULT false
+			completed BOOLEAN DEFAULT false,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+			deadline TIMESTAMP WITH TIME ZONE
 		);
 	`)
 

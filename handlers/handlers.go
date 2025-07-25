@@ -20,9 +20,13 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	query := `INSERT INTO tasks (title) VALUES ($1) RETURNING id`
+	if task.Deadline.IsZero() {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Deadline is required"})
+	}
 
-	err := h.DB.QueryRow(query, task.Title).Scan(&task)
+	query := `INSERT INTO tasks (title,created_at, deadline) VALUES ($1, CURRENT_TIMESTAMP, $2) RETURNING id, created_at`
+
+	err := h.DB.QueryRow(query, task.Title, task.Deadline).Scan(&task, &task.CreatedAt)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -32,7 +36,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 
 // get tasks from db and return it
 func (h *TaskHandler) GetTasks(c echo.Context) error {
-	query := `SELECT id, title, completed FROM tasks`
+	query := `SELECT id, title, completed, created_at, deadline FROM tasks`
 	rows, err := h.DB.Query(query)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -42,7 +46,7 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 	tasks := []models.Task{}
 	for rows.Next() {
 		var task models.Task
-		err := rows.Scan(&task.ID, &task.Title, &task.Completed)
+		err := rows.Scan(&task.ID, &task.Title, &task.Completed, &task.CreatedAt, &task.Deadline)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err.Error())
 		}
@@ -64,8 +68,12 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	update_query := `UPDATE tasks SET title = $1 WHERE id = $2`
-	_, err := h.DB.Exec(update_query, task.Title, id)
+	if task.Deadline.IsZero() {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Deadline is required"})
+	}
+
+	update_query := `UPDATE tasks SET title = $1, deadline = $2 WHERE id = $3`
+	_, err := h.DB.Exec(update_query, task.Title, task.Deadline, id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
