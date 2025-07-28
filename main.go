@@ -19,20 +19,20 @@ func main() {
 	port := fmt.Sprintf(":%s", envPort)
 
 	db := storage.ConnectDB()
-	defer db.Close()
+	defer db.DB.Close()
 
 	e := echo.New()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	taskHandler := &handlers.TaskHandler{DB: db}
+	postgres := handlers.NewTaskHandler(db)
 
-	e.GET("/tasks", taskHandler.GetTasks)
-	e.POST("/tasks", taskHandler.CreateTask)
-	e.PUT("/tasks/:id", taskHandler.UpdataTask)
-	e.PUT("/tasks/:id/complete", taskHandler.CompleteTask)
-	e.DELETE("/tasks/:id", taskHandler.DeleteTask)
+	e.GET("/tasks", postgres.GetTasks)
+	e.POST("/tasks", postgres.CreateTask)
+	e.PUT("/tasks/:id", postgres.UpdataTask)
+	e.PUT("/tasks/:id/complete", postgres.CompleteTask)
+	e.DELETE("/tasks/:id", postgres.DeleteTask)
 
 	e.Logger.Fatal(e.Start(port))
 }

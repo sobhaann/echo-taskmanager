@@ -1,16 +1,22 @@
 package handlers
 
 import (
-	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sobhaann/echo-taskmanager/models"
+	"github.com/sobhaann/echo-taskmanager/storage"
 )
 
 type TaskHandler struct {
-	DB *sql.DB
+	store storage.StorageInterface
+}
+
+func NewTaskHandler(store storage.StorageInterface) *TaskHandler {
+	return &TaskHandler{
+		store: store,
+	}
 }
 
 // create a new task
@@ -20,13 +26,17 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
+	//checking if any of the values is zero or not; if any value is a zero value it return an error
+
 	if task.Deadline.IsZero() {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Deadline is required"})
 	}
 
-	query := `INSERT INTO tasks (title,created_at, deadline) VALUES ($1, CURRENT_TIMESTAMP, $2) RETURNING id, created_at`
+	if task.Title == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is requierd"})
+	}
 
-	err := h.DB.QueryRow(query, task.Title, task.Deadline).Scan(&task.ID, &task.CreatedAt)
+	err := h.store.DBCreateTask(task)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -37,24 +47,30 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 
 // get tasks from db and return it
 func (h *TaskHandler) GetTasks(c echo.Context) error {
-	query := `SELECT id, title, completed, created_at, deadline FROM tasks`
-	rows, err := h.DB.Query(query)
+	// query := `SELECT id, title, completed, created_at, deadline FROM tasks`
+	// rows, err := h.DB.Query(query)
+	// if err != nil {
+	// 	return c.JSON(http.StatusInternalServerError, err.Error())
+	// }
+	// defer rows.Close()
+
+	// tasks := []models.Task{}
+	// for rows.Next() {
+	// 	var task models.Task
+	// 	err := rows.Scan(&task.ID, &task.Title, &task.Completed, &task.CreatedAt, &task.Deadline)
+	// 	if err != nil {
+	// 		return c.JSON(http.StatusInternalServerError, err.Error())
+	// 	}
+
+	// 	tasks = append(tasks, task)
+	// }
+	// if err = rows.Err(); err != nil {
+	// 	return c.JSON(http.StatusInternalServerError, err.Error())
+	// }
+
+	// return c.JSON(http.StatusOK, tasks)
+	tasks, err := h.store.DBGetTasks()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	defer rows.Close()
-
-	tasks := []models.Task{}
-	for rows.Next() {
-		var task models.Task
-		err := rows.Scan(&task.ID, &task.Title, &task.Completed, &task.CreatedAt, &task.Deadline)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
-		}
-
-		tasks = append(tasks, task)
-	}
-	if err = rows.Err(); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -64,30 +80,28 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 // update tasks
 func (h *TaskHandler) UpdataTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	task := new(models.Task)
-	if err := c.Bind(task); err != nil {
+	new_task := new(models.Task)
+	if err := c.Bind(new_task); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if task.Deadline.IsZero() {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Deadline is required"})
+	if new_task.Deadline.IsZero() && new_task.Title == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "all of the fields are empty"})
 	}
 
-	update_query := `UPDATE tasks SET title = $1, deadline = $2 WHERE id = $3`
-	_, err := h.DB.Exec(update_query, task.Title, task.Deadline, id)
+	err := h.store.DBUpdateTask(id, new_task)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	task.ID = id
-	return c.JSON(http.StatusOK, map[string]models.Task{"updated task": *task})
+	new_task.ID = id
+	return c.JSON(http.StatusOK, map[string]models.Task{"updated task": *new_task})
 }
 
 // complete a task
 func (h *TaskHandler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	query := `UPDATE tasks SET completed = true WHERE id = $1`
-	_, err := h.DB.Exec(query, id)
+	err := h.store.DBCompleteTask(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -98,8 +112,7 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 // delete a task
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	query := `DELETE FROM tasks WHERE ID = $1`
-	_, err := h.DB.Exec(query, id)
+	err := h.store.DBDeleteTask(id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
