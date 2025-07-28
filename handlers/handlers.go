@@ -63,7 +63,7 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 
 // update tasks
 func (h *TaskHandler) UpdataTask(c echo.Context) error {
-	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+	id, _ := strconv.Atoi(c.Param("id"))
 	task := new(models.Task)
 	if err := c.Bind(task); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -85,7 +85,7 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 
 // complete a task
 func (h *TaskHandler) CompleteTask(c echo.Context) error {
-	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+	id, _ := strconv.Atoi(c.Param("id"))
 	query := `UPDATE tasks SET completed = true WHERE id = $1`
 	_, err := h.DB.Exec(query, id)
 	if err != nil {
@@ -97,7 +97,7 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 
 // delete a task
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
-	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+	id, _ := strconv.Atoi(c.Param("id"))
 	query := `DELETE FROM tasks WHERE ID = $1`
 	_, err := h.DB.Exec(query, id)
 	if err != nil {
