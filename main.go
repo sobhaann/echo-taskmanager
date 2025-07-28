@@ -13,10 +13,11 @@ import (
 )
 
 func main() {
-
+	//load port from `.env` file
 	godotenv.Load()
 	envPort := os.Getenv("PORT")
 	port := fmt.Sprintf(":%s", envPort)
+
 	db := storage.ConnectDB()
 	defer db.Close()
 
@@ -35,3 +36,8 @@ func main() {
 
 	e.Logger.Fatal(e.Start(port))
 }
+
+//swager https://github.com/swaggo/swag
+//move database stuff to storage folder
+//made main.go cleaner
+//openapi

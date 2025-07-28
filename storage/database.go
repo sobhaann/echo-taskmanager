@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// creating the database schema and connect to it
 func ConnectDB() *sql.DB {
 	godotenv.Load()
 

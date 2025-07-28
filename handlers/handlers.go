@@ -27,6 +27,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 	query := `INSERT INTO tasks (title,created_at, deadline) VALUES ($1, CURRENT_TIMESTAMP, $2) RETURNING id, created_at`
 
 	err := h.DB.QueryRow(query, task.Title, task.Deadline).Scan(&task.ID, &task.CreatedAt)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
