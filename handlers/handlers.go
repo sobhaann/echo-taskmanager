@@ -47,28 +47,6 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 
 // get tasks from db and return it
 func (h *TaskHandler) GetTasks(c echo.Context) error {
-	// query := `SELECT id, title, completed, created_at, deadline FROM tasks`
-	// rows, err := h.DB.Query(query)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, err.Error())
-	// }
-	// defer rows.Close()
-
-	// tasks := []models.Task{}
-	// for rows.Next() {
-	// 	var task models.Task
-	// 	err := rows.Scan(&task.ID, &task.Title, &task.Completed, &task.CreatedAt, &task.Deadline)
-	// 	if err != nil {
-	// 		return c.JSON(http.StatusInternalServerError, err.Error())
-	// 	}
-
-	// 	tasks = append(tasks, task)
-	// }
-	// if err = rows.Err(); err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, err.Error())
-	// }
-
-	// return c.JSON(http.StatusOK, tasks)
 	tasks, err := h.store.DBGetTasks()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
