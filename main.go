@@ -15,6 +15,8 @@ func main() {
 	postgres.Run()
 }
 
+
+// --TODO--
 //swager https://github.com/swaggo/swag
 //move database stuff to storage folder
 //made main.go cleaner
