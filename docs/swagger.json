@@ -1,0 +1,12 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for managing tasks with Echo and PostgreSQL",
+        "title": "Echo Task Manager API",
+        "contact": {},
+        "version": "0.01"
+    },
+    "host": "localhost:4545",
+    "basePath": "/",
+    "paths": {}
+}

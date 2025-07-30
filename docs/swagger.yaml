@@ -1,0 +1,9 @@
+basePath: /
+host: localhost:4545
+info:
+  contact: {}
+  description: API for managing tasks with Echo and PostgreSQL
+  title: Echo Task Manager API
+  version: "0.01"
+paths: {}
+swagger: "2.0"

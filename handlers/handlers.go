@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	_ "github.com/sobhaann/echo-taskmanager/docs"
 	"github.com/sobhaann/echo-taskmanager/models"
 	"github.com/sobhaann/echo-taskmanager/storage"
 )
@@ -18,6 +19,18 @@ func NewTaskHandler(store storage.StorageInterface) *TaskHandler {
 		store: store,
 	}
 }
+
+// CreateTask godoc
+// @Summary      Create a new task
+// @Description  Create a new task with the provided details
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        task  body  models.Task  true  "Task to create"
+// @Success      201   {object}  models.Task
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /tasks [post]
 
 // create a new task
 func (h *TaskHandler) CreateTask(c echo.Context) error {
@@ -45,6 +58,16 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 	return c.JSON(http.StatusCreated, task)
 }
 
+// GetTasks godoc
+// @Summary      Get all tasks
+// @Description  Retrieve all tasks from the database
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  models.Task
+// @Failure      500  {object}  map[string]string
+// @Router       /tasks [get]
+
 // get tasks from db and return it
 func (h *TaskHandler) GetTasks(c echo.Context) error {
 	tasks, err := h.store.DBGetTasks()
@@ -54,6 +77,19 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, tasks)
 }
+
+// UpdataTask godoc
+// @Summary      Update a task
+// @Description  Update a task's details by its ID
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        id    path   int          true  "Task ID"
+// @Param        task  body   models.Task  true  "Task updates"
+// @Success      200   {object}  models.Task
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /tasks/{id} [put]
 
 // update tasks
 func (h *TaskHandler) UpdataTask(c echo.Context) error {
@@ -76,6 +112,17 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]models.Task{"updated task": *new_task})
 }
 
+// CompleteTask godoc
+// @Summary      Mark a task as completed
+// @Description  Mark a task as completed by its ID
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Task ID"
+// @Success      200  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /tasks/{id}/complete [put]
+
 // complete a task
 func (h *TaskHandler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -86,6 +133,17 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "Task completed"})
 }
+
+// DeleteTask godoc
+// @Summary      Delete a task
+// @Description  Delete a task by its ID
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        id  path  int  true  "Task ID"
+// @Success      200  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /tasks/{id} [delete]
 
 // delete a task
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
