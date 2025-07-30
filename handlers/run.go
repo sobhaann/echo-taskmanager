@@ -12,7 +12,7 @@ import (
 )
 
 //	@title			Echo Task Manager API
-//	@version		1.0
+//	@version		0.01
 //	@description	API for managing tasks with Echo and PostgreSQL
 //	@host			localhost:4545
 //	@BasePath		/

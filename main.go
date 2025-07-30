@@ -7,18 +7,12 @@ import (
 	_ "github.com/sobhaann/echo-taskmanager/docs"
 )
 
-//	@title			Echo Task Manager API
-//	@version		0.01
-//	@description	API for managing tasks with Echo and PostgreSQL
-//	@host			localhost:4545
-//	@BasePath		/
-
 func main() {
 	db := storage.ConnectDB()
 	defer db.DB.Close()
 	postgres := handlers.NewTaskHandler(db)
-	postgres.Run()
 
+	postgres.Run()
 }
 
 //swager https://github.com/swaggo/swag

@@ -21,18 +21,15 @@ func NewTaskHandler(store storage.StorageInterface) *TaskHandler {
 }
 
 // CreateTask godoc
-// @Summary      Create a new task
-// @Description  Create a new task with the provided details
-// @Tags         tasks
-// @Accept       json
-// @Produce      json
-// @Param        task  body  models.Task  true  "Task to create"
-// @Success      201   {object}  models.Task
-// @Failure      400   {object}  map[string]string
-// @Failure      500   {object}  map[string]string
-// @Router       /tasks [post]
-
-// create a new task
+//
+//	@Summary		Create task
+//	@Description	create a new task
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			task	body		models.Task	true	"Task object"
+//	@Success		201		{object}	models.Task
+//	@Router			/tasks [post]
 func (h *TaskHandler) CreateTask(c echo.Context) error {
 	task := new(models.Task)
 	if err := c.Bind(task); err != nil {
@@ -59,16 +56,14 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 }
 
 // GetTasks godoc
-// @Summary      Get all tasks
-// @Description  Retrieve all tasks from the database
-// @Tags         tasks
-// @Accept       json
-// @Produce      json
-// @Success      200  {array}  models.Task
-// @Failure      500  {object}  map[string]string
-// @Router       /tasks [get]
-
-// get tasks from db and return it
+//
+//	@Summary		List tasks
+//	@Description	get all tasks
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array}	models.Task
+//	@Router			/tasks [get]
 func (h *TaskHandler) GetTasks(c echo.Context) error {
 	tasks, err := h.store.DBGetTasks()
 	if err != nil {
@@ -79,19 +74,16 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 }
 
 // UpdataTask godoc
-// @Summary      Update a task
-// @Description  Update a task's details by its ID
-// @Tags         tasks
-// @Accept       json
-// @Produce      json
-// @Param        id    path   int          true  "Task ID"
-// @Param        task  body   models.Task  true  "Task updates"
-// @Success      200   {object}  models.Task
-// @Failure      400   {object}  map[string]string
-// @Failure      500   {object}  map[string]string
-// @Router       /tasks/{id} [put]
-
-// update tasks
+//
+//	@Summary		Update task
+//	@Description	update an existing task
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int			true	"Task ID"
+//	@Param			task	body		models.Task	true	"Task object"
+//	@Success		200		{object}	models.Task
+//	@Router			/tasks/{id} [put]
 func (h *TaskHandler) UpdataTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	new_task := new(models.Task)
@@ -113,17 +105,15 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 }
 
 // CompleteTask godoc
-// @Summary      Mark a task as completed
-// @Description  Mark a task as completed by its ID
-// @Tags         tasks
-// @Accept       json
-// @Produce      json
-// @Param        id  path  int  true  "Task ID"
-// @Success      200  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /tasks/{id}/complete [put]
-
-// complete a task
+//
+//	@Summary		Complete task
+//	@Description	mark a task as completed
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Task ID"
+//	@Success		200	{object}	models.Task
+//	@Router			/tasks/{id}/complete [put]
 func (h *TaskHandler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	err := h.store.DBCompleteTask(id)
@@ -135,17 +125,15 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 }
 
 // DeleteTask godoc
-// @Summary      Delete a task
-// @Description  Delete a task by its ID
-// @Tags         tasks
-// @Accept       json
-// @Produce      json
-// @Param        id  path  int  true  "Task ID"
-// @Success      200  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /tasks/{id} [delete]
-
-// delete a task
+//
+//	@Summary		Delete task
+//	@Description	delete a task
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Task ID"
+//	@Success		200	{object}	nil
+//	@Router			/tasks/{id} [delete]
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	err := h.store.DBDeleteTask(id)
