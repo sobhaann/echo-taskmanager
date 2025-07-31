@@ -58,7 +58,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 // GetTasks godoc
 //
 //	@Summary		List tasks
-//	@Description	get all tasks
+//	@Description	get all tasks from database
 //	@Tags			tasks
 //	@Accept			json
 //	@Produce		json
@@ -80,9 +80,9 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 //	@Tags			tasks
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		int			true	"Task ID"
-//	@Param			task	body		models.Task	true	"Task object"
-//	@Success		200		{object}	models.Task
+//	@Param			id	path		int	true	"Task ID"
+//
+//	@Success		200	{object}	models.Task
 //	@Router			/tasks/{id} [put]
 func (h *TaskHandler) UpdataTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))

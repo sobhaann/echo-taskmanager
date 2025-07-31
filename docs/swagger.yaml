@@ -19,7 +19,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get all tasks
+      description: get all tasks from database
       produces:
       - application/json
       responses:
@@ -82,12 +82,6 @@ paths:
         name: id
         required: true
         type: integer
-      - description: Task object
-        in: body
-        name: task
-        required: true
-        schema:
-          $ref: '#/definitions/models.Task'
       produces:
       - application/json
       responses:

@@ -11,12 +11,11 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-//	@title			Echo Task Manager API
-//	@version		0.01
-//	@description	API for managing tasks with Echo and PostgreSQL
-//	@host			localhost:4545
-//	@BasePath		/
-
+// @title			Echo Task Manager API
+// @version		0.01
+// @description	API for managing tasks with Echo and PostgreSQL
+// @host			localhost:4545
+// @BasePath		/
 func (p *TaskHandler) Run() {
 	//load port from `.env` file
 	godotenv.Load()

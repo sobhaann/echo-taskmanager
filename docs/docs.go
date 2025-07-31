@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/tasks": {
             "get": {
-                "description": "get all tasks",
+                "description": "get all tasks from database",
                 "consumes": [
                     "application/json"
                 ],
@@ -93,15 +93,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Task object",
-                        "name": "task",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Task"
-                        }
                     }
                 ],
                 "responses": {
