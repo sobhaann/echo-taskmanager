@@ -11,10 +11,10 @@ import (
 )
 
 type TaskHandler struct {
-	store storage.StorageInterface
+	store storage.GormStorageInterface
 }
 
-func NewTaskHandler(store storage.StorageInterface) *TaskHandler {
+func NewTaskHandler(store storage.GormStorageInterface) *TaskHandler {
 	return &TaskHandler{
 		store: store,
 	}
@@ -46,7 +46,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is requierd"})
 	}
 
-	err := h.store.DBCreateTask(task)
+	err := h.store.GormCreateTask(task)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -65,7 +65,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 //	@Success		200	{array}	models.Task
 //	@Router			/tasks [get]
 func (h *TaskHandler) GetTasks(c echo.Context) error {
-	tasks, err := h.store.DBGetTasks()
+	tasks, err := h.store.GormGetTasks()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -95,7 +95,7 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "all of the fields are empty"})
 	}
 
-	err := h.store.DBUpdateTask(id, new_task)
+	err := h.store.GormUpdateTask(id, new_task)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -116,7 +116,7 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 //	@Router			/tasks/{id}/complete [put]
 func (h *TaskHandler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.DBCompleteTask(id)
+	err := h.store.GormCompleteTask(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -136,7 +136,7 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 //	@Router			/tasks/{id} [delete]
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.DBDeleteTask(id)
+	err := h.store.GormDeleteTask(id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
