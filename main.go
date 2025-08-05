@@ -8,13 +8,12 @@ import (
 )
 
 func main() {
-	db := storage.ConnectDB()
-	defer db.DB.Close()
+	db := storage.ConnectPostgres()
+
 	postgres := handlers.NewTaskHandler(db)
 
 	postgres.Run()
 }
-
 
 // --TODO--
 //swager https://github.com/swaggo/swag

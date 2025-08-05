@@ -16,7 +16,7 @@ import (
 // @description	API for managing tasks with Echo and PostgreSQL
 // @host			localhost:4545
 // @BasePath		/
-func (p *TaskHandler) Run() {
+func (th *TaskHandler) Run() {
 	//load port from `.env` file
 	godotenv.Load()
 	envPort := os.Getenv("PORT")
@@ -29,11 +29,11 @@ func (p *TaskHandler) Run() {
 	//swagger ui
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	e.GET("/tasks", p.GetTasks)
-	e.POST("/tasks", p.CreateTask)
-	e.PUT("/tasks/:id", p.UpdataTask)
-	e.PUT("/tasks/:id/complete", p.CompleteTask)
-	e.DELETE("/tasks/:id", p.DeleteTask)
+	e.GET("/tasks", th.GetTasks)
+	e.POST("/tasks", th.CreateTask)
+	e.PUT("/tasks/:id", th.UpdataTask)
+	e.PUT("/tasks/:id/complete", th.CompleteTask)
+	e.DELETE("/tasks/:id", th.DeleteTask)
 
 	e.Logger.Fatal(e.Start(port))
 }
