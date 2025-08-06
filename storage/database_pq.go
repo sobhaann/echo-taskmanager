@@ -12,12 +12,12 @@ import (
 	"github.com/sobhaann/echo-taskmanager/models"
 )
 
-type StorageInterface interface {
-	DBCreateTask(t *models.Task) error
-	DBCompleteTask(id int) error
-	DBDeleteTask(id int) error
-	DBGetTasks() ([]models.Task, error)
-	DBUpdateTask(id int, new_task *models.Task) error
+type PostgresStorageInterface interface {
+	PQCreateTask(t *models.Task) error
+	PQCompleteTask(id int) error
+	PQDeleteTask(id int) error
+	PQGetTasks() ([]models.Task, error)
+	PQUpdateTask(id int, new_task *models.Task) error
 }
 
 type PostgresStore struct {
@@ -25,7 +25,7 @@ type PostgresStore struct {
 }
 
 // creating the database schema and connect to it
-func ConnectDB() *PostgresStore {
+func ConnectPostgresPQ() *PostgresStore {
 	godotenv.Load()
 
 	host := os.Getenv("DB_HOST")
@@ -67,14 +67,7 @@ func ConnectDB() *PostgresStore {
 	}
 }
 
-// // curently i dont undrestand how its work
-// func (p *PostgresStore) Close() {
-// 	if p.DB != nil {
-// 		p.Close()
-// 	}
-// }
-
-func (p *PostgresStore) DBCreateTask(t *models.Task) error {
+func (p *PostgresStore) PQCreateTask(t *models.Task) error {
 	query := `INSERT INTO tasks (title,created_at, deadline) VALUES ($1, CURRENT_TIMESTAMP, $2) RETURNING id, created_at`
 	err := p.DB.QueryRow(query, t.Title, t.Deadline).Scan(&t.ID, &t.CreatedAt)
 	if err != nil {
@@ -83,19 +76,19 @@ func (p *PostgresStore) DBCreateTask(t *models.Task) error {
 	return nil
 }
 
-func (p *PostgresStore) DBCompleteTask(id int) error {
+func (p *PostgresStore) PQCompleteTask(id int) error {
 	query := `UPDATE tasks SET completed = true WHERE id = $1`
 	_, err := p.DB.Exec(query, id)
 	return err
 }
 
-func (p *PostgresStore) DBDeleteTask(id int) error {
+func (p *PostgresStore) PQDeleteTask(id int) error {
 	query := `DELETE FROM tasks WHERE ID = $1`
 	_, err := p.DB.Exec(query, id)
 	return err
 }
 
-func (p *PostgresStore) DBGetTasks() ([]models.Task, error) {
+func (p *PostgresStore) PQGetTasks() ([]models.Task, error) {
 	query := `SELECT * FROM tasks`
 	rows, err := p.DB.Query(query)
 	if err != nil {
@@ -119,7 +112,7 @@ func (p *PostgresStore) DBGetTasks() ([]models.Task, error) {
 	return tasks, nil
 }
 
-func (p *PostgresStore) GetTaskByID(id int) (*models.Task, error) {
+func (p *PostgresStore) PQGetTaskByID(id int) (*models.Task, error) {
 	current_task := &models.Task{}
 	query := `SELECT title, created_at, deadline FROM tasks WHERE id = $1`
 	err := p.DB.QueryRow(query, id).Scan(&current_task.Title, &current_task.CreatedAt, &current_task.Deadline)
@@ -129,8 +122,8 @@ func (p *PostgresStore) GetTaskByID(id int) (*models.Task, error) {
 	return current_task, nil
 }
 
-func (p *PostgresStore) DBUpdateTask(id int, new_task *models.Task) error {
-	current_task, err := p.GetTaskByID(id)
+func (p *PostgresStore) PQUpdateTask(id int, new_task *models.Task) error {
+	current_task, err := p.PQGetTaskByID(id)
 	if err != nil {
 		return err
 	}
