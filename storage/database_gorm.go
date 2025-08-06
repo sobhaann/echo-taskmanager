@@ -24,7 +24,7 @@ type GormStore struct {
 	DB *gorm.DB
 }
 
-func ConnectPostgres() *GormStore {
+func ConnectPostgresGORM() *GormStore {
 	godotenv.Load()
 
 	host := os.Getenv("DB_HOST")
