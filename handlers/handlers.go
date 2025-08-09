@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/sobhaann/echo-taskmanager/docs"
 	"github.com/sobhaann/echo-taskmanager/models"
+
 	"github.com/sobhaann/echo-taskmanager/storage"
 )
 
@@ -46,7 +47,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is requierd"})
 	}
 
-	err := h.store.CreateTask(task)
+	err := h.store.CreateTask(task, c.Request().Context())
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -65,7 +66,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 //	@Success		200	{array}	models.Task
 //	@Router			/tasks [get]
 func (h *TaskHandler) GetTasks(c echo.Context) error {
-	tasks, err := h.store.GetTasks()
+	tasks, err := h.store.GetTasks(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -95,7 +96,7 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "all of the fields are empty"})
 	}
 
-	err := h.store.UpdateTask(id, new_task)
+	err := h.store.UpdateTask(id, new_task, c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -116,7 +117,7 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 //	@Router			/tasks/{id}/complete [put]
 func (h *TaskHandler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.CompleteTask(id)
+	err := h.store.CompleteTask(id, c.Request().Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -136,7 +137,7 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 //	@Router			/tasks/{id} [delete]
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.DeleteTask(id)
+	err := h.store.DeleteTask(id, c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
