@@ -50,6 +50,7 @@ func (g *GormDB) UpdateTask(id int, new_task *models.Task) error {
 	}
 
 	new_task.ID = current_task.ID
+	new_task.CreatedAt = current_task.CreatedAt
 
 	if err := g.DB.Save(new_task).Error; err != nil {
 		return err
