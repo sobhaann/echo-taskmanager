@@ -16,7 +16,7 @@ import (
 // @description	API for managing tasks with Echo and PostgreSQL
 // @host			localhost:4545
 // @BasePath		/
-func (thg *TaskHandlerGORM) GormRun() {
+func (th *TaskHandler) Run() {
 	//load port from `.env` file
 	godotenv.Load()
 	envPort := os.Getenv("PORT")
@@ -29,33 +29,11 @@ func (thg *TaskHandlerGORM) GormRun() {
 	//swagger ui
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	e.GET("/tasks", thg.GetTasks)
-	e.POST("/tasks", thg.CreateTask)
-	e.PUT("/tasks/:id", thg.UpdataTask)
-	e.PUT("/tasks/:id/complete", thg.CompleteTask)
-	e.DELETE("/tasks/:id", thg.DeleteTask)
-
-	e.Logger.Fatal(e.Start(port))
-}
-
-func (thpq *TaskHandlerPQ) PQRun() {
-	//load port from `.env` file
-	godotenv.Load()
-	envPort := os.Getenv("PORT")
-	port := fmt.Sprintf(":%s", envPort)
-
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	//swagger ui
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
-	e.GET("/tasks", thpq.GetTasks)
-	e.POST("/tasks", thpq.CreateTask)
-	e.PUT("/tasks/:id", thpq.UpdataTask)
-	e.PUT("/tasks/:id/complete", thpq.CompleteTask)
-	e.DELETE("/tasks/:id", thpq.DeleteTask)
+	e.GET("/tasks", th.GetTasks)
+	e.POST("/tasks", th.CreateTask)
+	e.PUT("/tasks/:id", th.UpdataTask)
+	e.PUT("/tasks/:id/complete", th.CompleteTask)
+	e.DELETE("/tasks/:id", th.DeleteTask)
 
 	e.Logger.Fatal(e.Start(port))
 }
