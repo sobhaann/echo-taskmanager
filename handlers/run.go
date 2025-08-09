@@ -35,5 +35,7 @@ func (th *TaskHandler) Run() {
 	e.PUT("/tasks/:id/complete", th.CompleteTask)
 	e.DELETE("/tasks/:id", th.DeleteTask)
 
+	defer th.store.Close()
+
 	e.Logger.Fatal(e.Start(port))
 }
