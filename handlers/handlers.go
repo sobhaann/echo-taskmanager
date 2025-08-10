@@ -10,12 +10,12 @@ import (
 	"github.com/sobhaann/echo-taskmanager/storage"
 )
 
-type TaskHandlerGORM struct {
-	store storage.GormStorageInterface
+type TaskHandler struct {
+	store storage.Store
 }
 
-func NewTaskHandlerGORM(store storage.GormStorageInterface) *TaskHandlerGORM {
-	return &TaskHandlerGORM{
+func NewTaskHandler(store storage.Store) *TaskHandler {
+	return &TaskHandler{
 		store: store,
 	}
 }
@@ -30,7 +30,7 @@ func NewTaskHandlerGORM(store storage.GormStorageInterface) *TaskHandlerGORM {
 //	@Param			task	body		models.Task	true	"Task object"
 //	@Success		201		{object}	models.Task
 //	@Router			/tasks [post]
-func (h *TaskHandlerGORM) CreateTask(c echo.Context) error {
+func (h *TaskHandler) CreateTask(c echo.Context) error {
 	task := new(models.Task)
 	if err := c.Bind(task); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -46,7 +46,7 @@ func (h *TaskHandlerGORM) CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is requierd"})
 	}
 
-	err := h.store.GormCreateTask(task)
+	err := h.store.CreateTask(task)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -64,8 +64,8 @@ func (h *TaskHandlerGORM) CreateTask(c echo.Context) error {
 //	@Produce		json
 //	@Success		200	{array}	models.Task
 //	@Router			/tasks [get]
-func (h *TaskHandlerGORM) GetTasks(c echo.Context) error {
-	tasks, err := h.store.GormGetTasks()
+func (h *TaskHandler) GetTasks(c echo.Context) error {
+	tasks, err := h.store.GetTasks()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -84,7 +84,7 @@ func (h *TaskHandlerGORM) GetTasks(c echo.Context) error {
 //
 //	@Success		200	{object}	models.Task
 //	@Router			/tasks/{id} [put]
-func (h *TaskHandlerGORM) UpdataTask(c echo.Context) error {
+func (h *TaskHandler) UpdataTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	new_task := new(models.Task)
 	if err := c.Bind(new_task); err != nil {
@@ -95,7 +95,7 @@ func (h *TaskHandlerGORM) UpdataTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "all of the fields are empty"})
 	}
 
-	err := h.store.GormUpdateTask(id, new_task)
+	err := h.store.UpdateTask(id, new_task)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -114,9 +114,9 @@ func (h *TaskHandlerGORM) UpdataTask(c echo.Context) error {
 //	@Param			id	path		int	true	"Task ID"
 //	@Success		200	{object}	models.Task
 //	@Router			/tasks/{id}/complete [put]
-func (h *TaskHandlerGORM) CompleteTask(c echo.Context) error {
+func (h *TaskHandler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.GormCompleteTask(id)
+	err := h.store.CompleteTask(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -134,9 +134,9 @@ func (h *TaskHandlerGORM) CompleteTask(c echo.Context) error {
 //	@Param			id	path		int	true	"Task ID"
 //	@Success		200	{object}	nil
 //	@Router			/tasks/{id} [delete]
-func (h *TaskHandlerGORM) DeleteTask(c echo.Context) error {
+func (h *TaskHandler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.GormDeleteTask(id)
+	err := h.store.DeleteTask(id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
