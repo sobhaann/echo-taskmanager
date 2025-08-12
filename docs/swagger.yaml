@@ -1,4 +1,20 @@
 definitions:
+  models.LoginReq:
+    properties:
+      password:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.SignupReq:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+    type: object
   models.Task:
     properties:
       completed:
@@ -12,9 +28,105 @@ definitions:
       title:
         type: string
     type: object
+  models.User:
+    properties:
+      id:
+        type: integer
+      phone_number:
+        type: string
+      user_name:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login request
+        in: body
+        name: loginReq
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login
+      tags:
+      - auth
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: Get user profile from JWT token in Authorization header
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get profile
+      tags:
+      - auth
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Signup request
+        in: body
+        name: signupReq
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignupReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Signup
+      tags:
+      - auth
   /tasks:
     get:
       consumes:
@@ -113,4 +225,27 @@ paths:
       summary: Complete task
       tags:
       - tasks
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get all users from database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all users
+      tags:
+      - auth
 swagger: "2.0"

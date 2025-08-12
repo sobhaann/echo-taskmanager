@@ -11,3 +11,10 @@ type Task struct {
 	CreatedAt time.Time `json:"createdAt" gorm:"autoCreateTime"`
 	Deadline  time.Time `json:"deadline"`
 }
+
+type User struct {
+	ID          int    `json:"id" gorm:"primaryKey;autoIncrement"`
+	UserName    string `json:"user_name" gorm:"type:varchar(255);not null"`
+	Password    string `json:"-" gorm:"type:varchar(255);not null"`
+	PhoneNumber string `json:"phone_number" gorm:"not null"`
+}
