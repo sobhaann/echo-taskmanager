@@ -3,10 +3,9 @@ package main
 import (
 	"log"
 
+	_ "github.com/sobhaann/echo-taskmanager/docs"
 	"github.com/sobhaann/echo-taskmanager/handlers"
 	"github.com/sobhaann/echo-taskmanager/storage"
-
-	_ "github.com/sobhaann/echo-taskmanager/docs"
 )
 
 func main() {

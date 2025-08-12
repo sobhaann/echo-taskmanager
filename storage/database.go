@@ -1,26 +1,13 @@
 package storage
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
-	"github.com/sobhaann/echo-taskmanager/models"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
-
-type GormDB struct {
-	DB *gorm.DB
-}
-
-type PqDB struct {
-	DB *sql.DB
-}
 
 func LoadDatabaseInfo() (string, string) {
 	godotenv.Load()
@@ -45,43 +32,10 @@ func InitDB() (Store, error) {
 
 	switch dbEngine {
 	case "gorm":
-		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		if err != nil {
-			log.Fatalf("there is an error in oppening the databse: %v", err)
-		}
+		return NewGormDB(dsn)
 
-		err = db.AutoMigrate(&models.Task{})
-		if err != nil {
-			log.Fatalf("there is an error in creating task tabels: %v", err)
-		}
-		return &GormDB{
-			DB: db,
-		}, nil
 	case "pq":
-		db, err := sql.Open("postgres", dsn)
-		if err != nil {
-			log.Fatalf("there is an error in opening the database: %v", err)
-		}
-		if err = db.Ping(); err != nil {
-			log.Fatalf("there is an error in error in connecting to the database: %v", err)
-		}
-
-		// Create tasks table if not exists
-		_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS tasks (
-			id SERIAL PRIMARY KEY,
-			title TEXT NOT NULL,
-			completed BOOLEAN DEFAULT false,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-			deadline TIMESTAMP WITH TIME ZONE
-		);
-	`)
-		if err != nil {
-			log.Fatalf("there is an error in creating the tasks table: %v", err)
-		}
-		return &PqDB{
-			DB: db,
-		}, nil
+		return NewPqDB(dsn)
 
 	default:
 		return nil, fmt.Errorf("unsupported DB engine: %s", dbEngine)

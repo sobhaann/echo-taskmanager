@@ -1,47 +1,61 @@
 package storage
 
 import (
+	"context"
+
+	"github.com/sobhaann/echo-taskmanager/dao"
 	"github.com/sobhaann/echo-taskmanager/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func (g *GormDB) CreateTask(task *models.Task) error {
-	if err := g.DB.Create(task).Error; err != nil {
-		return err
+type GormDB struct {
+	q  *dao.Query
+	db *gorm.DB
+}
+
+func NewGormDB(dsn string) (*GormDB, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	if err := db.AutoMigrate(&models.Task{}); err != nil {
+		return nil, err
+	}
+	q := dao.Use(db)
+	return &GormDB{
+		db: db,
+		q:  q,
+	}, nil
+}
+
+func (g *GormDB) CreateTask(task *models.Task, ctx context.Context) error {
+	err := g.q.Task.WithContext(ctx).Create(task)
+	return err
 }
 
 // i found this error that when i update a task complete status will set to false by default unless you specified to be true
-func (g *GormDB) CompleteTask(id int) error {
-	err := g.DB.Model(&models.Task{}).Where("id = ?", id).Update("completed", true).Error
+func (g *GormDB) CompleteTask(id int, ctx context.Context) error {
+	_, err := g.q.Task.WithContext(ctx).Where(g.q.Task.ID.Eq(id)).Update(g.q.Task.Completed, true)
+	return err
+}
+
+func (g *GormDB) DeleteTask(id int, ctx context.Context) error {
+	_, err := g.q.Task.WithContext(ctx).Where(g.q.Task.ID.Eq(id)).Delete()
+	return err
+}
+
+func (g *GormDB) GetTasks(ctx context.Context) ([]*models.Task, error) {
+	return g.q.Task.WithContext(ctx).Find()
+}
+
+func (g *GormDB) UpdateTask(id int, new_task *models.Task, ctx context.Context) error {
+	current_task, err := g.q.Task.WithContext(ctx).Where(g.q.Task.ID.Eq(id)).First()
 	if err != nil {
 		return err
 	}
-	return nil
-}
 
-func (g *GormDB) DeleteTask(id int) error {
-	if err := g.DB.Delete(&models.Task{}, id).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func (g *GormDB) GetTasks() ([]models.Task, error) {
-	var tasks []models.Task
-
-	result := g.DB.Find(&tasks)
-
-	return tasks, result.Error
-}
-
-func (g *GormDB) UpdateTask(id int, new_task *models.Task) error {
-	var current_task models.Task
-	if err := g.DB.First(&current_task, id).Error; err != nil {
-		return err
-	}
-
-	if current_task.Title == "" {
+	if new_task.Title == "" {
 		new_task.Title = current_task.Title
 	}
 
@@ -49,18 +63,18 @@ func (g *GormDB) UpdateTask(id int, new_task *models.Task) error {
 		new_task.Deadline = current_task.Deadline
 	}
 
-	new_task.ID = current_task.ID
 	new_task.CreatedAt = current_task.CreatedAt
+	new_task.ID = current_task.ID
 
-	if err := g.DB.Save(new_task).Error; err != nil {
+	_, err = g.q.Task.WithContext(ctx).Where(g.q.Task.ID.Eq(id)).Updates(new_task)
+	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (g *GormDB) Close() error {
-	db, err := g.DB.DB()
+	db, err := g.db.DB()
 	if err != nil {
 		return err
 	}
