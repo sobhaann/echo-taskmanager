@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -117,10 +120,28 @@ func (h *Handler) Profile(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	phone_number := claims["phone_number"].(string)
+
+	cacheKey := "user:" + phone_number
+
+	// 1. Try from cache
+	val, err := h.redis.Get(c.Request().Context(), cacheKey).Result()
+	if err == nil {
+		cached := new(models.User)
+		if jsonErr := json.Unmarshal([]byte(val), cached); jsonErr == nil {
+			log.Println("📦 Cache hit")
+			return c.JSON(http.StatusOK, cached)
+		}
+	}
+
+	// 2. Fallback to DB
 	claimed_user, err := h.store.GetUserByPhoneNumebr(phone_number, c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, map[string]error{"user not found": err})
 	}
+
+	// 3. Save to cache
+	data, _ := json.Marshal(claimed_user)
+	_ = h.redis.Set(c.Request().Context(), cacheKey, data, time.Hour).Err()
 	return c.JSON(http.StatusOK, claimed_user)
 }
 
