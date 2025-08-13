@@ -14,6 +14,7 @@ func main() {
 	})
 
 	g.ApplyBasic(&models.Task{})
+	g.ApplyBasic(&models.User{})
 	g.ApplyBasic()
 
 	g.Execute()

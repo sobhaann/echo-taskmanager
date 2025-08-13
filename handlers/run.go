@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/sobhaann/echo-taskmanager/docs" // Swagger generated docs
@@ -16,8 +17,11 @@ import (
 // @description	API for managing tasks with Echo and PostgreSQL
 // @host			localhost:4545
 // @BasePath		/
-func (th *TaskHandler) Run() {
-	//load port from `.env` file
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+func (h *Handler) Run() {
+	// Load environment variables
 	godotenv.Load()
 	envPort := os.Getenv("PORT")
 	port := fmt.Sprintf(":%s", envPort)
@@ -26,16 +30,28 @@ func (th *TaskHandler) Run() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	//swagger ui
+	// ===== Public routes =====
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.POST("/signup", h.Signup)
+	e.POST("/login", h.Login)
+	e.GET("/users", h.GetUsers) // If you want to make it public
 
-	e.GET("/tasks", th.GetTasks)
-	e.POST("/tasks", th.CreateTask)
-	e.PUT("/tasks/:id", th.UpdataTask)
-	e.PUT("/tasks/:id/complete", th.CompleteTask)
-	e.DELETE("/tasks/:id", th.DeleteTask)
+	e.GET("/tasks", h.GetTasks)
+	e.POST("/tasks", h.CreateTask)
+	e.PUT("/tasks/:id", h.UpdataTask)
+	e.PUT("/tasks/:id/complete", h.CompleteTask)
+	e.DELETE("/tasks/:id", h.DeleteTask)
 
-	defer th.store.Close()
+	// ===== Private routes =====
+	secret := os.Getenv("JWT_SECRET")
+	r := e.Group("")
+	r.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(secret),
+		//TokenLookup: "header:Authorization", // it doesnt work very well
+		ContextKey: "user",
+	}))
+	r.GET("/profile", h.Profile)
 
+	defer h.store.Close()
 	e.Logger.Fatal(e.Start(port))
 }

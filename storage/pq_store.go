@@ -33,6 +33,19 @@ func NewPqDB(dsn string) (*PqDB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	//user Table
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+		id SERIAL PRIMARY KEY,
+		name TEXT,
+		password TEXT NOT NULL,
+		phone_number TEXT NOT NULL UNIQUE
+		);
+		`)
+	if err != nil {
+		return nil, err
+	}
 	return &PqDB{db: db}, nil
 }
 
@@ -109,6 +122,49 @@ func (p *PqDB) UpdateTask(id int, new_task *models.Task, ctx context.Context) er
 		return err
 	}
 	return nil
+}
+
+// auth
+func (p *PqDB) CreateUser(user *models.User, ctx context.Context) error {
+	query := `INSERT INTO users (user_name, password, phone_number) VALUES ($1, $2, $3) RETURNING id`
+	err := p.db.QueryRow(query, user.UserName, user.Password, user.PhoneNumber).Scan(&user.ID)
+	return err
+
+}
+
+func (p *PqDB) GetUserByPhoneNumebr(phone_number string, ctx context.Context) (*models.User, error) {
+	user := &models.User{}
+	query := `SELECT id, user_name, phone_number, password FROM users WHERE phone_number = $1`
+	err := p.db.QueryRow(query, phone_number).
+		Scan(&user.ID, &user.UserName, &user.PhoneNumber, &user.Password)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (p *PqDB) GetUsers(ctx context.Context) ([]*models.User, error) {
+	query := `SELECT * FROM users`
+	rows, err := p.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*models.User
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.UserName, &user.Password, &user.PhoneNumber)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (p *PqDB) Close() error {

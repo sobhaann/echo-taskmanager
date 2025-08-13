@@ -13,8 +13,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("there is an error in initialize the db: %v", err)
 	}
-	taskHandler := handlers.NewTaskHandler(db)
-	taskHandler.Run()
+	handler := handlers.NewHandler(db)
+	handler.Run()
 
 }
 

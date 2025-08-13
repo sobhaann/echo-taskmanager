@@ -11,12 +11,12 @@ import (
 	"github.com/sobhaann/echo-taskmanager/storage"
 )
 
-type TaskHandler struct {
+type Handler struct {
 	store storage.Store
 }
 
-func NewTaskHandler(store storage.Store) *TaskHandler {
-	return &TaskHandler{
+func NewHandler(store storage.Store) *Handler {
+	return &Handler{
 		store: store,
 	}
 }
@@ -31,7 +31,7 @@ func NewTaskHandler(store storage.Store) *TaskHandler {
 //	@Param			task	body		models.Task	true	"Task object"
 //	@Success		201		{object}	models.Task
 //	@Router			/tasks [post]
-func (h *TaskHandler) CreateTask(c echo.Context) error {
+func (h *Handler) CreateTask(c echo.Context) error {
 	task := new(models.Task)
 	if err := c.Bind(task); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -65,7 +65,7 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 //	@Produce		json
 //	@Success		200	{array}	models.Task
 //	@Router			/tasks [get]
-func (h *TaskHandler) GetTasks(c echo.Context) error {
+func (h *Handler) GetTasks(c echo.Context) error {
 	tasks, err := h.store.GetTasks(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -85,7 +85,7 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 //
 //	@Success		200	{object}	models.Task
 //	@Router			/tasks/{id} [put]
-func (h *TaskHandler) UpdataTask(c echo.Context) error {
+func (h *Handler) UpdataTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	new_task := new(models.Task)
 	if err := c.Bind(new_task); err != nil {
@@ -115,7 +115,7 @@ func (h *TaskHandler) UpdataTask(c echo.Context) error {
 //	@Param			id	path		int	true	"Task ID"
 //	@Success		200	{object}	models.Task
 //	@Router			/tasks/{id}/complete [put]
-func (h *TaskHandler) CompleteTask(c echo.Context) error {
+func (h *Handler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	err := h.store.CompleteTask(id, c.Request().Context())
 	if err != nil {
@@ -135,7 +135,7 @@ func (h *TaskHandler) CompleteTask(c echo.Context) error {
 //	@Param			id	path		int	true	"Task ID"
 //	@Success		200	{object}	nil
 //	@Router			/tasks/{id} [delete]
-func (h *TaskHandler) DeleteTask(c echo.Context) error {
+func (h *Handler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	err := h.store.DeleteTask(id, c.Request().Context())
 	if err != nil {

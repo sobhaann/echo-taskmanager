@@ -22,6 +22,9 @@ func NewGormDB(dsn string) (*GormDB, error) {
 	if err := db.AutoMigrate(&models.Task{}); err != nil {
 		return nil, err
 	}
+	if err := db.AutoMigrate(&models.User{}); err != nil {
+		return nil, err
+	}
 	q := dao.Use(db)
 	return &GormDB{
 		db: db,
@@ -79,4 +82,19 @@ func (g *GormDB) Close() error {
 		return err
 	}
 	return db.Close()
+}
+
+// Authitication
+func (g *GormDB) CreateUser(user *models.User, ctx context.Context) error {
+	err := g.q.User.WithContext(ctx).Create(user)
+	return err
+}
+
+func (g *GormDB) GetUserByPhoneNumebr(phoneNumebr string, ctx context.Context) (*models.User, error) {
+	user, err := g.q.User.WithContext(ctx).Where(g.q.User.PhoneNumber.Eq(phoneNumebr)).First()
+	return user, err
+}
+
+func (g *GormDB) GetUsers(ctx context.Context) ([]*models.User, error) {
+	return g.q.User.WithContext(ctx).Find()
 }
