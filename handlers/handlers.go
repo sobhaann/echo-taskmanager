@@ -46,8 +46,8 @@ func (h *Handler) CreateTask(c echo.Context) error {
 	if task.Title == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is requierd"})
 	}
-
-	err := h.store.CreateTask(task, c.Request().Context())
+	user_id := h.claimUserID(c)
+	err := h.store.CreateTask(c.Request().Context(), task, user_id)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -66,7 +66,8 @@ func (h *Handler) CreateTask(c echo.Context) error {
 //	@Success		200	{array}	models.Task
 //	@Router			/tasks [get]
 func (h *Handler) GetTasks(c echo.Context) error {
-	tasks, err := h.store.GetTasks(c.Request().Context())
+	user_id := h.claimUserID(c)
+	tasks, err := h.store.GetTasks(c.Request().Context(), user_id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -95,8 +96,8 @@ func (h *Handler) UpdataTask(c echo.Context) error {
 	if new_task.Deadline.IsZero() && new_task.Title == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "all of the fields are empty"})
 	}
-
-	err := h.store.UpdateTask(id, new_task, c.Request().Context())
+	user_id := h.claimUserID(c)
+	err := h.store.UpdateTask(c.Request().Context(), new_task, id, user_id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -117,7 +118,8 @@ func (h *Handler) UpdataTask(c echo.Context) error {
 //	@Router			/tasks/{id}/complete [put]
 func (h *Handler) CompleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.CompleteTask(id, c.Request().Context())
+	user_id := h.claimUserID(c)
+	err := h.store.CompleteTask(c.Request().Context(), id, user_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -137,7 +139,8 @@ func (h *Handler) CompleteTask(c echo.Context) error {
 //	@Router			/tasks/{id} [delete]
 func (h *Handler) DeleteTask(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.DeleteTask(id, c.Request().Context())
+	user_id := h.claimUserID(c)
+	err := h.store.DeleteTask(c.Request().Context(), id, user_id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}

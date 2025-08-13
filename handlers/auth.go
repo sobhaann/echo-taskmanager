@@ -28,8 +28,12 @@ func (u *Handler) Signup(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "bad body"})
 	}
 
-	if existed_user, _ := u.store.GetUserByPhoneNumebr(signupReq.PhoneNumber, c.Request().Context()); existed_user != nil {
-		return c.JSON(http.StatusConflict, existed_user)
+	existingUser, err := u.store.GetUserByPhoneNumber(signupReq.PhoneNumber, c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to check user existence"})
+	}
+	if existingUser != nil {
+		return c.JSON(http.StatusConflict, echo.Map{"error": "user already exists"})
 	}
 
 	hashsed_password, err := auth.HashPassword(signupReq.Password)
@@ -67,7 +71,7 @@ func (u *Handler) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "bad body"})
 	}
 
-	user, err := u.store.GetUserByPhoneNumebr(loginReq.PhoneNumber, c.Request().Context())
+	user, err := u.store.GetUserByPhoneNumber(loginReq.PhoneNumber, c.Request().Context())
 	if err != nil || user == nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "user doesn't exist"})
 	}
@@ -117,11 +121,28 @@ func (h *Handler) Profile(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	phone_number := claims["phone_number"].(string)
-	claimed_user, err := h.store.GetUserByPhoneNumebr(phone_number, c.Request().Context())
+	claimed_user, err := h.store.GetUserByPhoneNumber(phone_number, c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, map[string]error{"user not found": err})
 	}
 	return c.JSON(http.StatusOK, claimed_user)
+}
+
+func (h *Handler) claimUserID(c echo.Context) int {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok || token == nil {
+		return 0
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0
+	}
+	user_id_float, ok := claims["user_id"].(float64)
+	if !ok {
+		return 0
+	}
+	user_id_int := int(user_id_float)
+	return user_id_int
 }
 
 //refresh token

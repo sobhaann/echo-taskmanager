@@ -10,8 +10,12 @@ import (
 	"github.com/sobhaann/echo-taskmanager/models"
 )
 
-func CreateToken(user models.User) (string, error) {
+func init() {
 	godotenv.Load()
+}
+
+func CreateToken(user models.User) (string, error) {
+
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	expMinutes, _ := strconv.Atoi(os.Getenv("JWT_EXPIRATION_MINUTES"))
 	if expMinutes == 0 {
