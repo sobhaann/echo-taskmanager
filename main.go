@@ -13,7 +13,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("there is an error in initialize the db: %v", err)
 	}
-	handler := handlers.NewHandler(db)
+	rdb := storage.InitRedis()
+	handler := handlers.NewHandler(db, rdb)
 	handler.Run()
 
 }

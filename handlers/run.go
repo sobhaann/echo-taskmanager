@@ -30,28 +30,39 @@ func (h *Handler) Run() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// create jwt middleware
+	secret := os.Getenv("JWT_SECRET")
+	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(secret),
+		//TokenLookup: "header:Authorization", // it doesnt work very well
+		ContextKey: "user",
+	})
+
 	// ===== Public routes =====
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.POST("/signup", h.Signup)
 	e.POST("/login", h.Login)
 	e.GET("/users", h.GetUsers) // If you want to make it public
 
-	e.GET("/tasks", h.GetTasks)
-	e.POST("/tasks", h.CreateTask)
-	e.PUT("/tasks/:id", h.UpdataTask)
-	e.PUT("/tasks/:id/complete", h.CompleteTask)
-	e.DELETE("/tasks/:id", h.DeleteTask)
-
 	// ===== Private routes =====
-	secret := os.Getenv("JWT_SECRET")
-	r := e.Group("")
-	r.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(secret),
-		//TokenLookup: "header:Authorization", // it doesnt work very well
-		ContextKey: "user",
-	}))
-	r.GET("/profile", h.Profile)
+	authRoute := e.Group("")
+	authRoute.Use(jwtMiddleware)
+	authRoute.GET("/profile", h.Profile)
+
+	taskRoutes := e.Group("/tasks")
+	taskRoutes.Use(jwtMiddleware)
+	taskRoutes.GET("", h.GetTasks)
+	taskRoutes.POST("", h.CreateTask)
+	taskRoutes.PUT("/:id", h.UpdataTask)
+	taskRoutes.PUT("/:id/complete", h.CompleteTask)
+	taskRoutes.DELETE("/:id", h.DeleteTask)
 
 	defer h.store.Close()
 	e.Logger.Fatal(e.Start(port))
 }
+
+//fix run.go
+//pq support
+// add caching for cache profile data with reddis
+
+// read about refresh token
