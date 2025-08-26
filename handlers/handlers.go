@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 	_ "github.com/sobhaann/echo-taskmanager/docs"
 	"github.com/sobhaann/echo-taskmanager/models"
 
@@ -13,11 +14,13 @@ import (
 
 type Handler struct {
 	store storage.Store
+	redis *redis.Client
 }
 
-func NewHandler(store storage.Store) *Handler {
+func NewHandler(store storage.Store, redis *redis.Client) *Handler {
 	return &Handler{
 		store: store,
+		redis: redis,
 	}
 }
 
