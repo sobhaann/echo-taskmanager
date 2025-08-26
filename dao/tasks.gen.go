@@ -32,6 +32,12 @@ func newTask(db *gorm.DB, opts ...gen.DOOption) task {
 	_task.Completed = field.NewBool(tableName, "completed")
 	_task.CreatedAt = field.NewTime(tableName, "created_at")
 	_task.Deadline = field.NewTime(tableName, "deadline")
+	_task.UserID = field.NewInt(tableName, "user_id")
+	_task.User = taskBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "models.User"),
+	}
 
 	_task.fillFieldMap()
 
@@ -47,6 +53,8 @@ type task struct {
 	Completed field.Bool
 	CreatedAt field.Time
 	Deadline  field.Time
+	UserID    field.Int
+	User      taskBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -68,6 +76,7 @@ func (t *task) updateTableName(table string) *task {
 	t.Completed = field.NewBool(table, "completed")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.Deadline = field.NewTime(table, "deadline")
+	t.UserID = field.NewInt(table, "user_id")
 
 	t.fillFieldMap()
 
@@ -92,22 +101,108 @@ func (t *task) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *task) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 5)
+	t.fieldMap = make(map[string]field.Expr, 7)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["title"] = t.Title
 	t.fieldMap["completed"] = t.Completed
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["deadline"] = t.Deadline
+	t.fieldMap["user_id"] = t.UserID
+
 }
 
 func (t task) clone(db *gorm.DB) task {
 	t.taskDo.ReplaceConnPool(db.Statement.ConnPool)
+	t.User.db = db.Session(&gorm.Session{Initialized: true})
+	t.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return t
 }
 
 func (t task) replaceDB(db *gorm.DB) task {
 	t.taskDo.ReplaceDB(db)
+	t.User.db = db.Session(&gorm.Session{})
 	return t
+}
+
+type taskBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a taskBelongsToUser) Where(conds ...field.Expr) *taskBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a taskBelongsToUser) WithContext(ctx context.Context) *taskBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a taskBelongsToUser) Session(session *gorm.Session) *taskBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a taskBelongsToUser) Model(m *models.Task) *taskBelongsToUserTx {
+	return &taskBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a taskBelongsToUser) Unscoped() *taskBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type taskBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a taskBelongsToUserTx) Find() (result *models.User, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a taskBelongsToUserTx) Append(values ...*models.User) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a taskBelongsToUserTx) Replace(values ...*models.User) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a taskBelongsToUserTx) Delete(values ...*models.User) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a taskBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a taskBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a taskBelongsToUserTx) Unscoped() *taskBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type taskDo struct{ gen.DO }
